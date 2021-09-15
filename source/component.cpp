@@ -3,13 +3,18 @@
 //
 
 #include <gtk/gtk.h>
-#include "interface.h"
-#include "type_test.h"
+#include "component.h"
 
-void setWindow(GtkWidget *wWindow) {
+GtkWidget *component::server = nullptr;
+GtkWidget *component::port = nullptr;
+GtkWidget *component::nat_type = nullptr;
+GtkWidget *component::addr_local = nullptr;
+GtkWidget *component::addr_public = nullptr;
+
+void component::setWindow(GtkWidget *wWindow) {
     GtkWindow *window = GTK_WINDOW(wWindow);
 
-    gtk_window_set_title(window, "Net Type Tester");
+    gtk_window_set_title(window, "Nat Type Tester");
     gtk_window_set_resizable(window, FALSE);
     //gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DROPDOWN_MENU);
     gtk_window_unmaximize(window);
@@ -20,8 +25,12 @@ void setWindow(GtkWidget *wWindow) {
     gtk_container_set_border_width(GTK_CONTAINER(wWindow), 10);
 }
 
-void setLabel(GtkWidget *pBox) {
-    GtkWidget
+GtkWidget *component::getWindow() {
+    return gtk_window_new(GTK_WINDOW_TOPLEVEL);
+}
+
+void component::setLabel(GtkWidget *pBox) {
+    auto
             *lbl_server = gtk_label_new("STUN Server:"),
             *lbl_nat_type = gtk_label_new("Nat Type:"),
             *lbl_addr_local = gtk_label_new("Local Addr:"),
@@ -43,8 +52,8 @@ void setLabel(GtkWidget *pBox) {
     gtk_box_pack_start(GTK_BOX(pBox), vbox, TRUE, TRUE, 10);
 }
 
-void setEditBox(GtkWidget *pBox) {
-    GtkWidget
+void component::setEditBox(GtkWidget *pBox) {
+    auto
             *edit_server = gtk_combo_box_text_new_with_entry(),
             *edit_nat_type = gtk_entry_new(),
             *edit_addr_local = gtk_entry_new(),
@@ -53,62 +62,53 @@ void setEditBox(GtkWidget *pBox) {
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.xten.com");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.ekiga.net");
 
-    gtk_widget_set_sensitive(edit_nat_type, FALSE); // disable widget
-    gtk_widget_set_sensitive(edit_addr_local, FALSE); // disable widget
-    gtk_widget_set_sensitive(edit_addr_public, FALSE); // disable widget
+    gtk_widget_set_name(edit_server, "edit_server");
+    gtk_widget_set_name(edit_nat_type, "edit_nat_type");
+    gtk_widget_set_name(edit_addr_local, "edit_addr_local");
+    gtk_widget_set_name(edit_addr_public, "edit_addr_public");
 
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    GtkBox *box = GTK_BOX(vbox);
+    gtk_widget_set_sensitive(edit_nat_type, FALSE); // disable component
+    gtk_widget_set_sensitive(edit_addr_local, FALSE); // disable component
+    gtk_widget_set_sensitive(edit_addr_public, FALSE); // disable component
+
+    auto *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    auto *box = GTK_BOX(vbox);
 
     gtk_box_pack_start(box, edit_server, TRUE, TRUE, 10);
     gtk_box_pack_start(box, edit_nat_type, TRUE, TRUE, 10);
     gtk_box_pack_start(box, edit_addr_local, TRUE, TRUE, 10);
     gtk_box_pack_start(box, edit_addr_public, TRUE, TRUE, 10);
 
+    server = edit_server;
+    nat_type = edit_nat_type;
+    addr_local = edit_addr_local;
+    addr_public = edit_addr_public;
+
     gtk_box_pack_start(GTK_BOX(pBox), vbox, TRUE, TRUE, 10);
 }
 
-void setPort(GtkWidget *pBox) {
-    GtkWidget *port = gtk_entry_new();
+void component::setPort(GtkWidget *pBox) {
+    GtkWidget *editPort = gtk_entry_new();
 
-    gtk_entry_set_text(GTK_ENTRY(port), "3478");
+    gtk_widget_set_name(editPort, "edit_port");
+    gtk_entry_set_text(GTK_ENTRY(editPort), "3478");
 
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    auto *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkBox *box = GTK_BOX(vbox);
 
-    gtk_box_pack_start(box, port, FALSE, FALSE, 10);
+    gtk_box_pack_start(box, editPort, FALSE, FALSE, 10);
+
+    port = editPort;
 
     gtk_box_pack_start(GTK_BOX(pBox), vbox, TRUE, TRUE, 10);
 }
 
-void setButton(GtkWidget *pBox) {
-    GtkWidget *button = gtk_button_new_with_label("Test");
+void component::setButton(GtkWidget *pBox, GCallback func) {
+    auto *button = gtk_button_new_with_label("Test");
     gtk_widget_set_valign(button, GTK_ALIGN_END);
     gtk_widget_set_halign(button, GTK_ALIGN_CENTER);
 
-    g_signal_connect(button, "clicked",
-                     G_CALLBACK(test), NULL);
+    g_signal_connect(button, "clicked", func, NULL);
 
     gtk_box_pack_end(GTK_BOX(pBox), button, TRUE, TRUE, 10);
-}
-
-GtkWidget *getWindow() {
-    return gtk_window_new(GTK_WINDOW_TOPLEVEL);
-}
-
-void initLayout(GtkWidget *wWindow) {
-    setWindow(wWindow);
-
-    GtkWidget
-            *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0),
-            *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
-    setLabel(hbox);
-    setEditBox(hbox);
-    setPort(hbox);
-    setButton(vbox);
-
-    gtk_container_add(GTK_CONTAINER(vbox), hbox);
-
-    gtk_container_add(GTK_CONTAINER(wWindow), vbox);
 }
