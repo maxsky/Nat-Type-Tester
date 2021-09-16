@@ -5,22 +5,23 @@
 #include "gsocket.h"
 
 char *gsocket::randstr(const int len) {
-    srandom(time(nullptr));
+    std::random_device rd;
+    std::default_random_engine gen = std::default_random_engine(rd());
 
     char *str;
+
     int i;
 
     for (i = 0; i < len; ++i) {
-        switch ((random() % 3)) {
+        switch ((gen() % 3)) {
             case 1:
-                str[i] = 'A' + random() % 26;
+                str[i] = 'A' + gen() % 26;
                 break;
             case 2:
-                str[i] = 'a' + random() % 26;
+                str[i] = 'a' + gen() % 26;
                 break;
             default:
-                str[i] = '0' + (random() % 10);
-                break;
+                str[i] = '0' + gen() % 10;
         }
     }
 
@@ -86,7 +87,7 @@ void gsocket::receiveData() {
 
     host = inet_ntoa(*(struct in_addr *) gethostbyname(host)->h_addr_list[0]); // convert to IP
 
-    uint iport = g_ascii_strtoull(port, nullptr, 10);
+    uint16_t iport = g_ascii_strtoull(port, nullptr, 10);
 
     printf("STUN Server: %s:%d\n", host, iport);
 
@@ -96,8 +97,6 @@ void gsocket::receiveData() {
     memset(&req, 0, sizeof(StunMessage));
 
     buildRequest(&req, false, false);
-
-    printf("%d\n", req.msg_header.msg_type);
 
     char buffer[STUN_MAX_MESSAGE_SIZE];
 

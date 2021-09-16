@@ -2,11 +2,7 @@
 // Created by Max Sky on 9/16/2021.
 //
 
-#include <gtk/gtk.h>
-
 #include "layout.h"
-#include "component.h"
-#include "gsocket.h"
 
 void handler() {
     gsocket::receiveData();

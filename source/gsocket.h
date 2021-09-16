@@ -5,9 +5,15 @@
 #ifndef NATTYPETESTER_GSOCKET_H
 #define NATTYPETESTER_GSOCKET_H
 
-#include <gtk/gtk.h>
+#ifndef __WIN32
+
 #include <netdb.h>
 #include <arpa/inet.h>
+
+#endif
+
+#include <gtk/gtk.h>
+#include <random>
 #include "component.h"
 #include "message/stunmsg.h"
 

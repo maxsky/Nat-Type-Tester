@@ -7,9 +7,9 @@ set(CMAKE_CXX_STANDARD 14)
 FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(MODULES REQUIRED gtk+-3.0)
 
-ADD_DEFINITIONS(${MODULES_CFLAGS_OTHER})
 INCLUDE_DIRECTORIES(${MODULES_INCLUDE_DIRS})
 LINK_DIRECTORIES(${MODULES_LIBRARY_DIRS})
+ADD_DEFINITIONS(${MODULES_CFLAGS_OTHER})
 
 add_executable(NatTypeTester main.cpp
         source/message/msgstruct.h
@@ -19,4 +19,10 @@ add_executable(NatTypeTester main.cpp
         source/layout.cpp source/layout.h
         source/gsocket.cpp source/gsocket.h)
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${GTK3_LIBRARIES})
+SET(LINK_PARAMS ${PROJECT_NAME} ${MODULES_LIBRARIES})
+
+IF (WIN32)
+    TARGET_LINK_LIBRARIES(${LINK_PARAMS} -lwsock32)
+ELSE ()
+    TARGET_LINK_LIBRARIES(${LINK_PARAMS})
+ENDIF ()

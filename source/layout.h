@@ -5,6 +5,10 @@
 #ifndef NATTYPETESTER_LAYOUT_H
 #define NATTYPETESTER_LAYOUT_H
 
+#include <gtk/gtk.h>
+#include "component.h"
+#include "gsocket.h"
+
 class layout {
 
 public:

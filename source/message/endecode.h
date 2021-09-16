@@ -7,6 +7,12 @@
 
 #endif //NATTYPETESTER_ENDECODE_H
 
+#ifdef __WIN32
+
+#include <winsock2.h>
+
+#endif
+
 #include <cstring>
 #include <cstdint>
 #include <cstdlib>
