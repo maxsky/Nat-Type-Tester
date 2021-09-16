@@ -5,11 +5,18 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 14)
 
 FIND_PACKAGE(PkgConfig REQUIRED)
-PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
+PKG_CHECK_MODULES(MODULES REQUIRED gtk+-3.0)
 
-INCLUDE_DIRECTORIES(${GTK3_INCLUDE_DIRS})
-LINK_DIRECTORIES(${GTK3_LIBRARY_DIRS})
+ADD_DEFINITIONS(${MODULES_CFLAGS_OTHER})
+INCLUDE_DIRECTORIES(${MODULES_INCLUDE_DIRS})
+LINK_DIRECTORIES(${MODULES_LIBRARY_DIRS})
 
-add_executable(NatTypeTester main.cpp source/component.cpp source/component.h source/layout.cpp source/layout.h)
+add_executable(NatTypeTester main.cpp
+        source/message/msgstruct.h
+        source/message/stunmsg.cpp source/message/stunmsg.h
+        source/message/endecode.cpp source/message/endecode.h
+        source/component.cpp source/component.h
+        source/layout.cpp source/layout.h
+        source/gsocket.cpp source/gsocket.h)
 
-TARGET_LINK_LIBRARIES(NatTypeTester ${GTK3_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${GTK3_LIBRARIES})
