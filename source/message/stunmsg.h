@@ -9,4 +9,4 @@
 
 #endif //NATTYPETESTER_STUNMSG_H
 
-unsigned int encodeMessage(const StunMessage &msg, char *buffer);
+char *encodeMessage(const StunMessage &msg);

@@ -22,7 +22,7 @@ class gsocket {
 public:
     static void receiveData();
 
-    static char *randstr(int len);
+    static char * randstr(unsigned len);
 
     static void buildRequest(StunMessage *msg, bool change_ip, bool change_port);
 

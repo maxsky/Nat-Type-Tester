@@ -4,32 +4,27 @@
 
 #include "gsocket.h"
 
-char *gsocket::randstr(const int len) {
-    std::random_device rd;
-    std::default_random_engine gen = std::default_random_engine(rd());
+using namespace std;
 
-    char *str;
+char *gsocket::randstr(unsigned length) {
+    const char charset[] = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    int i;
+    unsigned charlen = strlen(charset);
 
-    for (i = 0; i < len; ++i) {
-        switch ((gen() % 3)) {
-            case 1:
-                str[i] = 'A' + gen() % 26;
-                break;
-            case 2:
-                str[i] = 'a' + gen() % 26;
-                break;
-            default:
-                str[i] = '0' + gen() % 10;
-        }
+    char *str = new char[length];
+    str[length] = '\0';
+
+    random_device rd;
+    default_random_engine random(rd());
+
+    for (int i = 0; i < length; i++) {
+        str[i] = charset[random() % charlen];
     }
 
     return str;
 }
 
 void gsocket::buildRequest(StunMessage *msg, bool change_ip, bool change_port) {
-    msg->has_changed_req = true;
     msg->msg_header.msg_type = STUN_BIND_REQUEST;
     msg->msg_header.id = randstr(12);
     msg->change_req.value = (change_ip ? STUN_FLAG_CHANGE_IP : 0) | (change_port ? STUN_FLAG_CHANGE_PORT : 0);
@@ -77,6 +72,8 @@ void gsocket::receiveData() {
 
     GError *error;
 
+    //printf("%s", randstr(12));
+
     auto *socket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, G_SOCKET_PROTOCOL_UDP, &error);
 
     if (socket == nullptr) {
@@ -98,25 +95,30 @@ void gsocket::receiveData() {
 
     buildRequest(&req, false, false);
 
-    char buffer[STUN_MAX_MESSAGE_SIZE];
+    char *buffer = encodeMessage(req);
 
-    unsigned int bufferLen = encodeMessage(req, buffer);
 
-    gssize len = g_socket_send_to(socket, socket_address, buffer, bufferLen, nullptr, &error);
+    gssize len = g_socket_send_to(socket, socket_address, buffer, sizeof(buffer), nullptr, &error);
 
     if (len == -1) {
         g_error("%s", error->message);
     }
 
-    auto *localhost = g_inet_socket_address_new(g_inet_address_new_from_string("0.0.0.0"), 54321);
-
-    if (!g_socket_bind(socket, localhost, true, &error)) {
-        g_error("%s", error->message);
-    }
+//    auto *localhost = g_inet_socket_address_new(g_inet_address_new_any(G_SOCKET_FAMILY_IPV4), 54321);
+//
+//    if (!g_socket_bind(socket, localhost, true, &error)) {
+//        g_error("%s", error->message);
+//    }
 
     char receive[STUN_MAX_MESSAGE_SIZE];
 
-    g_socket_receive(socket, receive, STUN_MAX_MESSAGE_SIZE, nullptr, &error);
+    GInputVector input;
+
+    GSocketControlMessage msg;
+
+    g_socket_receive_message(socket, socket_address, input, 1, msg, nullptr, &error);
+
+    printf("%s", receive);
 
     g_socket_close(socket, &error);
 }

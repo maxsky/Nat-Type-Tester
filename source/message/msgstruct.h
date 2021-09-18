@@ -92,62 +92,18 @@ typedef struct {
 
 typedef struct {
     StunMessageHeader msg_header;
-
-    bool has_mapped_addr;
-
     StunAttrAddress mapped_addr;
-
-    bool has_resp_addr;
-
     StunAttrAddress resp_addr;
-
-    bool has_changed_req;
-
     StunAttrChangeRequest change_req;
-
-    bool has_src_addr;
-
     StunAttrAddress src_addr;
-
-    bool has_changed_addr;
-
     StunAttrAddress changed_addr;
-
-    bool has_username;
-
     StunAttrString username;
-
-    bool has_password;
-
     StunAttrString password;
-
-    bool has_msg_integrity;
-
     StunAttrIntegrity msg_integrity;
-
-    bool has_err;
-
     StunAttrError err;
-
-    bool has_unknown_attrs;
-
     StunAttrUnknown unknown_attrs;
-
-    bool has_reflected_from;
-
     StunAttrAddress reflected_from;
-
-    bool has_xor_mapped_addr;
-
     StunAttrAddress xor_mapped_addr;
-
-    bool xor_only;
-
-    bool has_serv_name;
-
     StunAttrString serv_name;
-
-    bool has_secondary_addr;
-
     StunAttrAddress secondary_addr;
 } StunMessage;
