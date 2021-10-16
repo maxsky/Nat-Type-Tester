@@ -88,7 +88,7 @@ void gsocket::receiveData() {
 
     printf("STUN Server: %s:%d\n", host, iport);
 
-    auto *socket_address = g_inet_socket_address_new(g_inet_address_new_from_string(host), iport);
+    GSocketAddress *socket_address = g_inet_socket_address_new(g_inet_address_new_from_string(host), iport);
 
     StunMessage req;
     memset(&req, 0, sizeof(StunMessage));
@@ -112,11 +112,11 @@ void gsocket::receiveData() {
 
     char receive[STUN_MAX_MESSAGE_SIZE];
 
-    GInputVector input;
+    GInputVector *input = nullptr;
 
     GSocketControlMessage msg;
 
-    g_socket_receive_message(socket, socket_address, input, 1, msg, nullptr, &error);
+    g_socket_receive_message(socket, nullptr, input, 1, nullptr, nullptr, nullptr, nullptr, &error);
 
     printf("%s", receive);
 

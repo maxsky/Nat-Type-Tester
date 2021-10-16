@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/NetTypeTester.iml" filepath="$PROJECT_DIR$/.idea/NetTypeTester.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Nat-Type-Tester.iml" filepath="$PROJECT_DIR$/.idea/Nat-Type-Tester.iml" />
     </modules>
   </component>
 </project>

@@ -16,9 +16,9 @@ void component::setWindow(GtkWidget *wWindow) {
 
     gtk_window_set_title(window, "Nat Type Tester");
     gtk_window_set_resizable(window, FALSE);
-    //gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DROPDOWN_MENU);
+    // gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DROPDOWN_MENU);
     gtk_window_unmaximize(window);
-    gtk_window_set_position(window, GTK_WIN_POS_NONE);
+    gtk_window_set_position(window, GTK_WIN_POS_CENTER_ON_PARENT);
     gtk_window_activate_default(window);
     gtk_window_activate_focus(window);
 

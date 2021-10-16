@@ -2,14 +2,18 @@
 // Created by Max Sky on 2021/9/16.
 //
 
-#ifndef NATTYPETESTER_ENDECODE_H
-#define NATTYPETESTER_ENDECODE_H
+#ifndef NATTYPETESTER_ENCODEUTIL_H
+#define NATTYPETESTER_ENCODEUTIL_H
 
-#endif //NATTYPETESTER_ENDECODE_H
+#endif //NATTYPETESTER_ENCODEUTIL_H
 
 #ifdef __WIN32
 
 #include <winsock2.h>
+
+#else
+
+#include <netinet/in.h>
 
 #endif
 

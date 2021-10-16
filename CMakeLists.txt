@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.10)
 project(NatTypeTester)
 
 set(CMAKE_C_STANDARD 99)
@@ -14,7 +14,7 @@ ADD_DEFINITIONS(${MODULES_CFLAGS_OTHER})
 add_executable(NatTypeTester main.cpp
         source/message/msgstruct.h
         source/message/stunmsg.cpp source/message/stunmsg.h
-        source/message/endecode.cpp source/message/endecode.h
+        source/message/encodeutil.cpp source/message/encodeutil.h
         source/component.cpp source/component.h
         source/layout.cpp source/layout.h
         source/gsocket.cpp source/gsocket.h)

@@ -2,7 +2,7 @@
 // Created by Max Sky on 2021/9/16.
 //
 
-#include "endecode.h"
+#include "encodeutil.h"
 
 char *encode(char *buf, const char *data, unsigned int length) {
     memcpy(buf, data, length);

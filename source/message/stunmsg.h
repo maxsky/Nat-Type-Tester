@@ -5,7 +5,7 @@
 #ifndef NATTYPETESTER_STUNMSG_H
 #define NATTYPETESTER_STUNMSG_H
 
-#include "endecode.h"
+#include "encodeutil.h"
 
 #endif //NATTYPETESTER_STUNMSG_H
 
