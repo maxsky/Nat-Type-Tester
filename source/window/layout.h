@@ -7,7 +7,7 @@
 
 #include <gtk/gtk.h>
 #include "component.h"
-#include "gsocket.h"
+#include "../socket/client.h"
 
 class layout {
 

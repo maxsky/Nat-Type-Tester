@@ -15,9 +15,9 @@ add_executable(NatTypeTester main.cpp
         source/message/msgstruct.h
         source/message/stunmsg.cpp source/message/stunmsg.h
         source/message/encodeutil.cpp source/message/encodeutil.h
-        source/component.cpp source/component.h
-        source/layout.cpp source/layout.h
-        source/gsocket.cpp source/gsocket.h)
+        source/window/component.cpp source/window/component.h
+        source/window/layout.cpp source/window/layout.h
+        source/socket/client.cpp source/socket/client.h source/socket/socket.cpp source/socket/socket.h)
 
 SET(LINK_PARAMS ${PROJECT_NAME} ${MODULES_LIBRARIES})
 

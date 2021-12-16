@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include "source/layout.h"
+#include "source/window/layout.h"
 
 int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
@@ -10,6 +10,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-
-

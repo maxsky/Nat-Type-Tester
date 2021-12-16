@@ -5,7 +5,7 @@
 #include "layout.h"
 
 void handler() {
-    gsocket::receiveData();
+    client::request();
 }
 
 void layout::init() {
