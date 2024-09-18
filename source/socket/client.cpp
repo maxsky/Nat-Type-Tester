@@ -78,7 +78,9 @@ void client::request() {
 
     socket::build(host, port);
 
-    //socket::send();
+    StunMessage msg;
+
+    socket::send(msg);
 
     socket::close();
 }

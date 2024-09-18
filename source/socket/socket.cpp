@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <netinet/tcp.h>
 #include "socket.h"
 
 GSocket *gsocket;
@@ -36,7 +37,9 @@ int socket::build(const char *host, const char *port) {
         g_error("%s", error->message);
     }
 
-    g_socket_set_blocking(gsocket, FALSE);
+    // g_socket_set_blocking(gsocket, FALSE);
+
+    g_socket_set_option(gsocket, IPPROTO_TCP, TCP_NODELAY, TRUE, &error);
 
     host = inet_ntoa(*(struct in_addr *) gethostbyname(host)->h_addr_list[0]); // convert to IP
 
@@ -51,7 +54,7 @@ int socket::build(const char *host, const char *port) {
         exit(EXIT_FAILURE);
     }
 
-    /* Create a thread,to process the receive function. */
+    /* Create a thread to process the reception function. */
     res = pthread_create(&recv_thread, &thread_attr, &socket::receive, nullptr);
 
     if (res != 0) {
@@ -71,7 +74,7 @@ int socket::build(const char *host, const char *port) {
 void socket::send(StunMessage msg) {
     GError *error;
 
-    char *buffer = encodeMessage(msg);
+    gchar *buffer = encodeMessage(msg);
 
     gssize len = g_socket_send(gsocket, buffer, sizeof(buffer), nullptr, &error);
 
@@ -85,19 +88,13 @@ void socket::send(StunMessage msg) {
  * @return
  */
 void *socket::receive(void *arg) {
-    GError *error;
+    gchar *buffer = nullptr;
 
-    char msg[STUN_MAX_MESSAGE_SIZE];
-
-    while (true) {
-        bzero(msg, STUN_MAX_MESSAGE_SIZE);
-
+    while (strlen(buffer) <= 0) {
         /* 阻塞直到收到客户端发的消息 */
-        if (g_socket_receive(gsocket, msg, STUN_MAX_MESSAGE_SIZE, nullptr, &error) < 0) {
-            g_error("%s", error->message);
-        }
+        g_socket_receive(gsocket, buffer, STUN_MAX_MESSAGE_SIZE, nullptr, nullptr);
 
-        //show_remote_text(rcvd_mess);
+        printf("%s", buffer);
     }
 }
 

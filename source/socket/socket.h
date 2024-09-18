@@ -14,9 +14,10 @@ public:
 
     static void send(StunMessage msg);
 
-    static void *receive(void *arg);
-
     static void close();
+
+private:
+    static void *receive(void *arg);
 };
 
 #endif //NATTYPETESTER_SOCKET_H
