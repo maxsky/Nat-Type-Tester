@@ -13,8 +13,6 @@ ADD_DEFINITIONS(${MODULES_CFLAGS_OTHER})
 
 add_executable(NatTypeTester main.cpp
         source/message/msgstruct.h
-        source/message/stunmsg.cpp source/message/stunmsg.h
-        source/message/encodeutil.cpp source/message/encodeutil.h
         source/window/component.cpp source/window/component.h
         source/window/layout.cpp source/window/layout.h
         source/socket/client.cpp source/socket/client.h source/socket/socket.cpp source/socket/socket.h)

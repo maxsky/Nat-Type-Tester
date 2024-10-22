@@ -5,19 +5,25 @@
 #ifndef NATTYPETESTER_SOCKET_H
 #define NATTYPETESTER_SOCKET_H
 
-#include "../message/stunmsg.h"
+
+#include <random>
+#include "../message/msgstruct.h"
 
 class socket {
 
 public:
-    static int build(const char *serv_ip, const char *port);
+    static int send(const char *host, const char *port);
 
-    static void send(StunMessage msg);
-
-    static void close();
+    static int receive();
 
 private:
-    static void *receive(void *arg);
+    static std::string randstr(unsigned len);
+
+    static GSocketAddress *build(const char *host, const char *port, StunMessageHeader *header);
+
+    static void parse(const char *response, size_t len);
+
+    static void close();
 };
 
 #endif //NATTYPETESTER_SOCKET_H

@@ -49,7 +49,7 @@
 
 typedef struct {
     uint16_t msg_type;
-    uint64_t msg_len;
+    uint16_t msg_len;
     char *id;
 } StunMessageHeader;
 
