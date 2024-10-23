@@ -45,9 +45,8 @@ bool client::validateRequired(const char *host, const char *port) {
         size_t len = strspn(port, digits);
 
         // 如果返回的长度与字符串的长度相同，说明字符串全为数字
-
         if (len != strlen(port)) {
-
+            return false;
         }
     }
 

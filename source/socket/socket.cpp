@@ -168,9 +168,10 @@ int socket::receive() {
     auto *response = new gchar[1024];
 
     // g_socket_set_blocking(gsocket, false);
-    g_socket_set_timeout(gsocket, 5);
+    g_socket_set_timeout(gsocket, 5); // sec
 
-    gssize received = g_socket_receive_from(gsocket, &src_addr, response, sizeof(response), nullptr, &error);
+    gssize received = g_socket_receive_from(
+            gsocket, &src_addr, response, sizeof(response), nullptr, &error);
 
     if (received == -1) {
         if (error->code == G_IO_ERROR_TIMED_OUT) {
