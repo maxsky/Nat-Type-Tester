@@ -2,8 +2,7 @@
 // Created by Max Sky on 2021/9/15.
 //
 
-#ifndef NATTYPETESTER_COMPONENT_H
-#define NATTYPETESTER_COMPONENT_H
+#include <gtk/gtk.h>
 
 class component {
 
@@ -25,6 +24,7 @@ public:
     static void setPort(GtkWidget *pBox);
 
     static void setButton(GtkWidget *pBox, GCallback func);
-};
 
-#endif //NATTYPETESTER_COMPONENT_H
+private:
+    static void on_server_changed(GtkComboBox *widget);
+};

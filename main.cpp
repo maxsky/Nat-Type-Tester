@@ -1,6 +1,4 @@
 #include <gtk/gtk.h>
-#include <stdio.h>
-#include <malloc/malloc.h>
 #include "source/window/layout.h"
 
 int main(int argc, char *argv[]) {

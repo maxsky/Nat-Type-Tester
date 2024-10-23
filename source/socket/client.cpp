@@ -3,9 +3,10 @@
 //
 
 #include "client.h"
+#include "../window/component.h"
 
 bool client::validateRequired(const char *host, const char *port) {
-    if (host != nullptr && host[0] == '\0') {
+    if (host == nullptr || host[0] == '\0') {
         GtkWidget *dialog = gtk_message_dialog_new(nullptr,
                                                    GTK_DIALOG_DESTROY_WITH_PARENT,
                                                    GTK_MESSAGE_WARNING,
@@ -22,7 +23,7 @@ bool client::validateRequired(const char *host, const char *port) {
         return false;
     }
 
-    if (port != nullptr && port[0] == '\0') {
+    if (port == nullptr || port[0] == '\0') {
         GtkWidget *dialog = gtk_message_dialog_new(nullptr,
                                                    GTK_DIALOG_DESTROY_WITH_PARENT,
                                                    GTK_MESSAGE_WARNING,
@@ -37,13 +38,24 @@ bool client::validateRequired(const char *host, const char *port) {
         gtk_widget_destroy(dialog);
 
         return false;
+    } else {
+        const char *digits = "0123456789";
+
+        // 检查从字符串开头到不符合字符集的第一个字符有多长
+        size_t len = strspn(port, digits);
+
+        // 如果返回的长度与字符串的长度相同，说明字符串全为数字
+
+        if (len != strlen(port)) {
+
+        }
     }
 
     return true;
 }
 
 void client::request() {
-    const gchar *host = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(component::server));
+    gchar *host = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(component::server));
     const gchar *port = gtk_entry_get_text(GTK_ENTRY(component::port));
 
     if (!validateRequired(host, port)) {
@@ -51,5 +63,4 @@ void client::request() {
     }
 
     socket::send(host, port);
-    socket::receive();
 }

@@ -2,13 +2,6 @@
 // Created by Max Sky on 2021/9/16.
 //
 
-#include <locale>
-
-#ifndef NATTYPETESTER_MSGSTRUCT_H
-#define NATTYPETESTER_MSGSTRUCT_H
-
-#endif //NATTYPETESTER_MSGSTRUCT_H
-
 #define STUN_MAX_STRING 256
 #define STUN_MAX_UNKNOWN_ATTRIBUTES 8
 #define STUN_MAX_MESSAGE_SIZE 1024
@@ -16,6 +9,10 @@
 /** STUN Method */
 #define STUN_METHOD_BIND       0x001
 #define STUN_METHOD_SHARED_SEC 0x002 // reserved
+
+/** Message Headers  */
+#define STUN_HEADER_SIZE                     20
+#define STUN_HEADER_TRANSACTION_ID_LENGTH    12
 
 /** Message Types */
 #define STUN_BIND_REQUEST          0x0001
@@ -49,61 +46,6 @@
 
 typedef struct {
     uint16_t msg_type;
-    uint16_t msg_len;
-    char *id;
+    uint16_t msg_length;
+    char *transaction_id;
 } StunMessageHeader;
-
-typedef struct {
-    uint32_t addr;
-    uint16_t port;
-} StunAddress4;
-
-typedef struct {
-    StunAddress4 ipv4;
-    uint8_t family;
-    uint8_t pad;
-} StunAttrAddress;
-
-typedef struct {
-    uint32_t value;
-} StunAttrChangeRequest;
-
-typedef struct {
-    char value[STUN_MAX_STRING];
-    uint16_t size;
-} StunAttrString;
-
-typedef struct {
-    char hash[20];
-} StunAttrIntegrity;
-
-typedef struct {
-    uint8_t err_class;
-    uint8_t code;
-    char reason[STUN_MAX_STRING];
-    uint16_t reason_size;
-    uint16_t pad; // all 0
-} StunAttrError;
-
-typedef struct {
-    uint16_t attr_type[STUN_MAX_UNKNOWN_ATTRIBUTES];
-    uint16_t attr_num;
-} StunAttrUnknown;
-
-typedef struct {
-    StunMessageHeader msg_header;
-    StunAttrAddress mapped_addr;
-    StunAttrAddress resp_addr;
-    StunAttrChangeRequest change_req;
-    StunAttrAddress src_addr;
-    StunAttrAddress changed_addr;
-    StunAttrString username;
-    StunAttrString password;
-    StunAttrIntegrity msg_integrity;
-    StunAttrError err;
-    StunAttrUnknown unknown_attrs;
-    StunAttrAddress reflected_from;
-    StunAttrAddress xor_mapped_addr;
-    StunAttrString serv_name;
-    StunAttrAddress secondary_addr;
-} StunMessage;

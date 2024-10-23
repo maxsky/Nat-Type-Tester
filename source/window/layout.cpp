@@ -3,6 +3,7 @@
 //
 
 #include "layout.h"
+#include "../socket/client.h"
 
 void handler() {
     client::request();
