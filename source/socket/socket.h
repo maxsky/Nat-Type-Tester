@@ -2,7 +2,7 @@
 // Created by Max Sky on 2021/12/16.
 //
 
-#include "../message/msgstruct.h"
+#include "../constants/msgstruct.h"
 
 class socket {
 
@@ -16,7 +16,7 @@ private:
 
     static char *serialize_stun_header(StunMessageHeader *header);
 
-    static void build(gchar *host, const gchar *port, StunMessageHeader *header);
+    static int build(gchar *host, const gchar *port, StunMessageHeader *header);
 
     static void parse(const gchar *response, gssize size);
 

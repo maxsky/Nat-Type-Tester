@@ -44,26 +44,28 @@ char *socket::serialize_stun_header(StunMessageHeader *header) {
 /**
  * @param host
  * @param port
- * @return int
+ * @param header
+ *
+ * @return
  */
-void socket::build(gchar *host, const gchar *port, StunMessageHeader *header) {
+int socket::build(gchar *host, const gchar *port, StunMessageHeader *header) {
     GError *error = nullptr;
 
     gsocket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, G_SOCKET_PROTOCOL_UDP, &error);
 
-    if (error || !gsocket) {
-        printf("Failed to create socket: %s\n", error ? error->message : "Unknown error");
+    if (!gsocket || error) {
+        g_print("Failed to create socket: %s.\n", error ? error->message : "Unknown error");
 
-        exit(EXIT_FAILURE);
+        return -1001;
     }
 
     GResolver *resolver = g_resolver_get_default();
     GList *addresses = g_resolver_lookup_by_name(resolver, host, nullptr, &error);
 
     if (!addresses) {
-        g_print("Failed to resolve domain: %s. Error: %s\n", host, error ? error->message : "Unknown error");
+        g_print("Failed to resolve domain: %s. Error: %s.\n", host, error ? error->message : "Unknown error");
 
-        exit(EXIT_FAILURE);
+        return -1002;
     }
 
     for (GList *l = addresses; l != nullptr; l = l->next) {
@@ -80,19 +82,19 @@ void socket::build(gchar *host, const gchar *port, StunMessageHeader *header) {
 
     g_resolver_free_addresses(addresses);
 
-    GInetAddress *inet_address = g_inet_address_new_from_string(host);
+    server_addr = g_inet_socket_address_new_from_string(host, *(guint16 *) port);
 
-    if (!inet_address) {
-        g_print("Failed to create GInetAddress from host\n");
+    if (!server_addr) {
+        g_print("Failed to create server address.\n");
 
-        exit(EXIT_FAILURE);
+        return -1003;
     }
-
-    server_addr = g_inet_socket_address_new(inet_address, *(guint16 *) port);
 
     header->msg_type = STUN_BIND_REQUEST; // STUN Binding Request
     header->msg_length = 0;
     header->transaction_id = generate_transaction_id(12);
+
+    return 0;
 }
 
 void socket::parse(const gchar *response, gssize size) {
@@ -137,20 +139,27 @@ void socket::parse(const gchar *response, gssize size) {
  * @param msg
  */
 int socket::send(char *host, const char *port) {
+    GError *error = nullptr;
+
     StunMessageHeader header;
 
-    build(host, port, &header);
+    int status = build(host, port, &header);
 
-    GError *error = nullptr;
+    if (status != 0) {
+        return status;
+    }
 
     char *buffer = serialize_stun_header(&header);
 
-    gssize sent = g_socket_send_to(gsocket, server_addr, buffer, sizeof(header), nullptr, &error);
+    gssize sent = g_socket_send_to(gsocket, server_addr, buffer, STUN_HEADER_SIZE, nullptr, &error);
 
     if (error || sent < 0) {
-        printf("Failed to send STUN request: %s\n", error ? error->message : "Unknown error");
-        return -1;
+        g_print("Failed to send STUN request: %s\n", error ? error->message : "Unknown error");
+
+        return -2001;
     }
+
+    g_print("Sent STUN request: %ld bytes.\n", sent);
 
     receive();
 
@@ -168,20 +177,24 @@ int socket::receive() {
     auto *response = new gchar[1024];
 
     // g_socket_set_blocking(gsocket, false);
-    g_socket_set_timeout(gsocket, 5); // sec
+    g_socket_set_timeout(gsocket, 10); // sec
 
     gssize received = g_socket_receive_from(
             gsocket, &src_addr, response, sizeof(response), nullptr, &error);
 
     if (received == -1) {
+        g_print("STUN response error code: %d\n", error->code);
+
         if (error->code == G_IO_ERROR_TIMED_OUT) {
-            g_print("Operation timed out after 5 seconds\n");
+            g_print("Socket receive timeout after 10 seconds.\n");
         } else {
-            g_print("Error receiving data: %s\n", error->message);
+            g_print("Error receiving data: %s\n", error ? error->message : "Unknown error");
         }
 
-        return -1;
+        return -2002;
     }
+
+    g_print("Received STUN response: %ld bytes.\n", received);
 
     parse(response, received);
 

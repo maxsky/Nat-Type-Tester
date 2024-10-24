@@ -15,7 +15,7 @@ LINK_DIRECTORIES(${GTK3_LIBRARY_DIRS})
 ADD_DEFINITIONS(${GTK3_CFLAGS_OTHER})
 
 ADD_EXECUTABLE(NatTypeTester main.cpp
-        source/message/msgstruct.h
+        source/constants/msgstruct.h
         source/window/component.cpp source/window/component.h
         source/window/layout.cpp source/window/layout.h
         source/socket/client.cpp source/socket/client.h source/socket/socket.cpp source/socket/socket.h)
