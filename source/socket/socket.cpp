@@ -149,12 +149,21 @@ int socket::send(char *host, const char *port) {
         return status;
     }
 
+    // g_socket_set_blocking(gsocket, false);
+    g_socket_set_timeout(gsocket, 2); // sec
+
     char *buffer = serialize_stun_header(&header);
 
-    gssize sent = g_socket_send_to(gsocket, server_addr, buffer, STUN_HEADER_SIZE, nullptr, &error);
+    gssize sent = g_socket_send_to(gsocket, server_addr, buffer, sizeof(buffer), nullptr, &error);
 
-    if (error || sent < 0) {
-        g_print("Failed to send STUN request: %s\n", error ? error->message : "Unknown error");
+    if (sent == -1) {
+        if (error && error->code == G_IO_ERROR_TIMED_OUT) {
+            g_print("Socket send timeout after 10 seconds.\n");
+        } else {
+            g_print("STUN request error code: %d\n", error->code);
+
+            g_print("Failed to send STUN request: %s\n", error ? error->message : "Unknown error");
+        }
 
         return -2001;
     }
@@ -174,31 +183,41 @@ int socket::receive() {
 
     GSocketAddress *src_addr = nullptr;
 
-    auto *response = new gchar[1024];
+    auto *response = new gchar[4096];
 
-    // g_socket_set_blocking(gsocket, false);
-    g_socket_set_timeout(gsocket, 10); // sec
+    int t = 0;
 
-    gssize received = g_socket_receive_from(
-            gsocket, &src_addr, response, sizeof(response), nullptr, &error);
+    while (t <= 20) {
+        t++;
 
-    if (received == -1) {
-        g_print("STUN response error code: %d\n", error->code);
+        gssize received = g_socket_receive_from(
+                gsocket, &src_addr, response, 4096, nullptr, &error);
+        if (received == -1) {
+            g_print("Error receiving data: %s\n", error->message);
 
-        if (error->code == G_IO_ERROR_TIMED_OUT) {
-            g_print("Socket receive timeout after 10 seconds.\n");
+            g_clear_error(&error);
         } else {
-            g_print("Error receiving data: %s\n", error ? error->message : "Unknown error");
+            g_print("Received data: %.*s\n", (int) received, response);
         }
-
-        return -2002;
     }
 
-    g_print("Received STUN response: %ld bytes.\n", received);
+//    if (received == -1) {
+//        if (error->code == G_IO_ERROR_TIMED_OUT) {
+//            g_print("Socket receive timeout after 10 seconds.\n");
+//        } else {
+//            g_print("STUN response error code: %d\n", error->code);
+//
+//            g_print("Error receiving data: %s\n", error ? error->message : "Unknown error");
+//        }
+//
+//        return -2002;
+//    }
 
-    parse(response, received);
+//    g_print("Received STUN response: %ld bytes.\n", received);
 
-    close();
+//    parse(response, received);
+
+//    close();
 
     return 0;
 }
