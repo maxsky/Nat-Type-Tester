@@ -2,43 +2,57 @@
 // Created by Max Sky on 2021/12/16.
 //
 
-#include <arpa/inet.h>
-#include <gtk/gtk.h>
 #include "socket.h"
+#include <arpa/inet.h>
+#include <thread>
 
 GSocket *gsocket;
 GSocketAddress *server_addr;
 
 using namespace std;
 
-char *socket::generate_transaction_id(size_t length) {
-    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+void socket::generate_transaction_id(char transaction_id[STUN_HEADER_TRANSACTION_ID_LENGTH]) {
+    const string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    char *transaction_id = new char[length];
+    // 创建随机数生成器
+    random_device rd;  // 使用随机设备生成种子
+    mt19937 gen(rd()); // Mersenne Twister 随机数引擎
+    uniform_int_distribution<> dist(0, (int) charset.size() - 1);
 
-    for (size_t i = 0; i < length; i++) {
-        int key = rand() % (int) (sizeof(charset) - 1);
-
-        transaction_id[i] = charset[key];
+    for (size_t i = 0; i < STUN_HEADER_TRANSACTION_ID_LENGTH; i++) {
+        transaction_id[i] = charset[dist(gen)];
     }
-
-    return transaction_id;
 }
 
-// 序列化 STUN 请求为字节数组
-char *socket::serialize_stun_header(StunMessageHeader *header) {
-    char *buffer = static_cast<char *>(malloc(STUN_HEADER_SIZE));
+gboolean socket::resolve_hostname_to_ip(gchar **host) {
+    GError *error = nullptr;
 
-    // 序列化消息类型和消息长度，转换为网络字节序
-    guint16 msg_type_net = htons(header->msg_type);
-    guint16 msg_length_net = htons(header->msg_length);
+    GResolver *resolver = g_resolver_get_default();
+    GList *addresses = g_resolver_lookup_by_name(resolver, *host, nullptr, &error);
 
-    // 将数据复制到缓冲区
-    memcpy(buffer, &msg_type_net, sizeof(msg_type_net));      // 复制消息类型
-    memcpy(buffer + 2, &msg_length_net, sizeof(msg_length_net));  // 复制消息长度
-    memcpy(buffer + 4, header->transaction_id, STUN_HEADER_TRANSACTION_ID_LENGTH);  // 复制事务 ID
+    if (!addresses) {
+        g_print("Failed to resolve domain: %s. Error: %s.\n", *host, error ? error->message : "Unknown error");
 
-    return buffer;
+        return false;
+    }
+
+    for (GList *l = addresses; l != nullptr; l = l->next) {
+        GInetAddress *addr = G_INET_ADDRESS(l->data);
+
+        if (addr) {
+            *host = g_inet_address_to_string(addr);
+
+            if (*host) {
+                g_resolver_free_addresses(addresses);
+
+                return true;
+            }
+        }
+    }
+
+    g_resolver_free_addresses(addresses);
+
+    return false;
 }
 
 /**
@@ -59,40 +73,34 @@ int socket::build(gchar *host, const gchar *port, StunMessageHeader *header) {
         return -1001;
     }
 
-    GResolver *resolver = g_resolver_get_default();
-    GList *addresses = g_resolver_lookup_by_name(resolver, host, nullptr, &error);
+//    // 绑定本机地址
+//    GSocketAddress *local_addr = g_inet_socket_address_new(g_inet_address_new_any(G_SOCKET_FAMILY_IPV4), 0);
+//
+//    gboolean bind_result = g_socket_bind(gsocket, local_addr, false, &error);
+//
+//    g_object_unref(local_addr);
+//
+//    if (!bind_result || error) {
+//        g_print("Failed to bind socket: %s.\n", error ? error->message : "Unknown error");
+//
+//        return -1002;
+//    }
 
-    if (!addresses) {
-        g_print("Failed to resolve domain: %s. Error: %s.\n", host, error ? error->message : "Unknown error");
-
-        return -1002;
+    if (!resolve_hostname_to_ip(&host)) {
+        return -1003;
     }
 
-    for (GList *l = addresses; l != nullptr; l = l->next) {
-        GInetAddress *addr = G_INET_ADDRESS(l->data);
-
-        if (addr) {
-            host = g_inet_address_to_string(addr);
-
-            if (host) {
-                break;
-            }
-        }
-    }
-
-    g_resolver_free_addresses(addresses);
-
-    server_addr = g_inet_socket_address_new_from_string(host, *(guint16 *) port);
+    server_addr = g_inet_socket_address_new_from_string(host, strtol(port, nullptr, 10)); // 使用 strtol 转换数据类型
 
     if (!server_addr) {
         g_print("Failed to create server address.\n");
 
-        return -1003;
+        return -1004;
     }
 
-    header->msg_type = STUN_BIND_REQUEST; // STUN Binding Request
-    header->msg_length = 0;
-    header->transaction_id = generate_transaction_id(12);
+    header->msg_type = g_htons(STUN_BIND_REQUEST); // 转换为网络字节序
+    header->msg_length = g_htons(0);
+    generate_transaction_id(header->transaction_id);
 
     return 0;
 }
@@ -126,6 +134,7 @@ void socket::parse(const gchar *response, gssize size) {
                              (response[pos + 9] << 16) |
                              (response[pos + 10] << 8) |
                              response[pos + 11];
+
                 g_print("External IP: %d.%d.%d.%d, Port: %d\n",
                         (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF, port);
             }
@@ -139,8 +148,6 @@ void socket::parse(const gchar *response, gssize size) {
  * @param msg
  */
 int socket::send(char *host, const char *port) {
-    GError *error = nullptr;
-
     StunMessageHeader header;
 
     int status = build(host, port, &header);
@@ -149,20 +156,23 @@ int socket::send(char *host, const char *port) {
         return status;
     }
 
-    // g_socket_set_blocking(gsocket, false);
-    g_socket_set_timeout(gsocket, 2); // sec
+    g_socket_set_blocking(gsocket, false); // 非阻塞模式
+    g_socket_set_timeout(gsocket, 10); // timeout 10 sec
 
-    char *buffer = serialize_stun_header(&header);
+    GError *error = nullptr;
 
-    gssize sent = g_socket_send_to(gsocket, server_addr, buffer, sizeof(buffer), nullptr, &error);
+    gchar buffer[sizeof(StunMessageHeader)];
+    memcpy(buffer, &header, sizeof(StunMessageHeader));
 
-    if (sent == -1) {
+    gssize sent = g_socket_send_to(gsocket, server_addr, buffer, STUN_HEADER_SIZE, nullptr, &error);
+
+    if (sent == -1 || error) {
         if (error && error->code == G_IO_ERROR_TIMED_OUT) {
             g_print("Socket send timeout after 10 seconds.\n");
         } else {
             g_print("STUN request error code: %d\n", error->code);
 
-            g_print("Failed to send STUN request: %s\n", error ? error->message : "Unknown error");
+            g_print("Failed to send STUN request: %s\n", error->message);
         }
 
         return -2001;
@@ -184,40 +194,36 @@ int socket::receive() {
     GSocketAddress *src_addr = nullptr;
 
     auto *response = new gchar[4096];
+    gssize received = 0;
 
-    int t = 0;
+    int count = 0;
 
-    while (t <= 20) {
-        t++;
+    while (count <= 20) {
+        count++;
 
-        gssize received = g_socket_receive_from(
+        received = g_socket_receive_from(
                 gsocket, &src_addr, response, 4096, nullptr, &error);
-        if (received == -1) {
+
+        if (received == -1 || error) {
             g_print("Error receiving data: %s\n", error->message);
 
             g_clear_error(&error);
         } else {
-            g_print("Received data: %.*s\n", (int) received, response);
+            g_print("Received STUN response: %ld bytes.\n", received);
+
+            break;
         }
+
+        this_thread::sleep_for(chrono::milliseconds(500));
     }
 
-//    if (received == -1) {
-//        if (error->code == G_IO_ERROR_TIMED_OUT) {
-//            g_print("Socket receive timeout after 10 seconds.\n");
-//        } else {
-//            g_print("STUN response error code: %d\n", error->code);
-//
-//            g_print("Error receiving data: %s\n", error ? error->message : "Unknown error");
-//        }
-//
-//        return -2002;
-//    }
+    if (received == -1) {
+        return -3001;
+    }
 
-//    g_print("Received STUN response: %ld bytes.\n", received);
+    parse(response, received);
 
-//    parse(response, received);
-
-//    close();
+    close();
 
     return 0;
 }

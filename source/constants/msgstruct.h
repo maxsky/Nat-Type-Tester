@@ -2,6 +2,8 @@
 // Created by Max Sky on 2021/9/16.
 //
 
+#include <cstdint>
+
 #define STUN_MAX_STRING 256
 #define STUN_MAX_UNKNOWN_ATTRIBUTES 8
 #define STUN_MAX_MESSAGE_SIZE 1024
@@ -47,5 +49,5 @@
 typedef struct {
     uint16_t msg_type;
     uint16_t msg_length;
-    char *transaction_id;
+    char transaction_id[STUN_HEADER_TRANSACTION_ID_LENGTH]; // 12 bytes
 } StunMessageHeader;

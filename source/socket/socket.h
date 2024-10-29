@@ -3,6 +3,8 @@
 //
 
 #include "../constants/msgstruct.h"
+#include <gtk/gtk.h>
+#include <random>
 
 class socket {
 
@@ -12,9 +14,9 @@ public:
     static int receive();
 
 private:
-    static char *generate_transaction_id(size_t length);
+    static void generate_transaction_id(char transaction_id[STUN_HEADER_TRANSACTION_ID_LENGTH]);
 
-    static char *serialize_stun_header(StunMessageHeader *header);
+    static gboolean resolve_hostname_to_ip(gchar **host);
 
     static int build(gchar *host, const gchar *port, StunMessageHeader *header);
 
