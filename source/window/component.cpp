@@ -58,16 +58,12 @@ void component::setEditBox(GtkWidget *pBox) {
             *edit_addr_local = gtk_entry_new(),
             *edit_addr_public = gtk_entry_new();
 
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "global.stun.twilio.com");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.3cx.com");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.cloudflare.com");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.ekiga.net");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.l.google.com");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.prod.fastly.net");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.voipbuster.com");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.voipstunt.com");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.prod.fastly.net");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.cloudflare.com");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.l.google.com");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(edit_server), "stun.xten.com");
-
 
     g_signal_connect(edit_server, "changed", G_CALLBACK(on_server_changed), NULL);
 
